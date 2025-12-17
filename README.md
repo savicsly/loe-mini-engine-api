@@ -1,59 +1,149 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LOE Mini Trading Engine API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive Laravel-based mini trading engine that implements core cryptocurrency trading functionality with real-time order matching, asset management, and live event broadcasting.
 
-## About Laravel
+## 🚀 Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+-   **User Management**: Registration, authentication with email verification
+-   **Asset Portfolio**: Multi-asset support with precise decimal handling
+-   **Order Management**: Create, cancel, and track buy/sell limit orders
+-   **Real-time Matching**: Full order matching with commission calculation
+-   **Live Broadcasting**: Real-time event notifications via Laravel Reverb
+-   **Comprehensive API**: RESTful endpoints for all trading operations
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🏗️ Core Business Logic
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Order Processing
 
-## Learning Laravel
+-   **Buy Orders**: Validates and locks USD balance (amount × price)
+-   **Sell Orders**: Validates and locks asset quantities
+-   **Order States**: OPEN → FILLED/CANCELED with proper fund management
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Matching Engine
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+-   **Full Match Only**: Orders must have identical amounts (no partial fills)
+-   **Price Priority**: Buy orders (highest first), Sell orders (lowest first)
+-   **Time Priority**: First-in-first-out within same price levels
+-   **Commission**: 1.5% of trade value deducted from buyer
 
-## Laravel Sponsors
+### Real-time Integration
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   **OrderMatched Event**: Broadcasts to both parties via private channels
+-   **Instant Updates**: Frontend receives balance/asset changes immediately
+-   **No Refresh Required**: UI updates automatically on successful matches
 
-### Premium Partners
+## 🛠️ Installation
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd loe-mini-engine-api
 
-## Contributing
+# Install dependencies
+composer install
+npm install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Environment setup
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# Database setup
+php artisan migrate:fresh --seed
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Start the development server
+php artisan serve
+php artisan queue:work
+php artisan reverb:start --port=8080
+```
 
-## Security Vulnerabilities
+## 📊 Database Structure
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+-   **Users**: Balance (USDT) + authentication
+-   **Assets**: User portfolios (BTC, ETH, etc.) with locked amounts
+-   **Orders**: Buy/sell orders with status tracking
+-   **Trades**: Executed matches with commission records
 
-## License
+## 🧪 Testing
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The system includes comprehensive tests covering all trading scenarios:
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific trading tests
+php artisan test tests/Feature/TradingEngineTest.php
+
+# Test with coverage
+php artisan test --coverage
+```
+
+## 📡 API Endpoints
+
+See `API_DOCUMENTATION.md` for detailed endpoint documentation including:
+
+-   Authentication endpoints (`/login`, `/register`)
+-   Profile management (`/profile`)
+-   Order operations (`/orders`, `/orders/{id}/cancel`)
+-   Orderbook retrieval (`/orders?symbol=BTC/USDT`)
+-   Order matching (`/match-orders`)
+
+## 🔗 Real-time Integration
+
+Configure Laravel Reverb for real-time broadcasting:
+
+```env
+BROADCAST_DRIVER=reverb
+REVERB_APP_ID=your_app_id
+REVERB_APP_KEY=your_key
+REVERB_APP_SECRET=your_secret
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+```
+
+Frontend integration example:
+
+```javascript
+// Laravel Echo is pre-configured for Reverb
+const channel = window.Echo.private("user." + userId);
+
+channel.listen("OrderMatched", (data) => {
+    console.log("Trade executed:", data.trade);
+    // Update UI automatically
+});
+```
+
+## 📝 Seeded Data
+
+The seeders create:
+
+-   10 users (including Victor Bala with `savicsly@gmail.com`)
+-   1-2 random assets per user
+-   Sample orders across different trading pairs
+-   Historical trade data for testing
+
+## 🔐 Security
+
+-   Laravel Sanctum for API authentication
+-   Input validation on all endpoints
+-   Transaction-safe order processing
+-   Precise decimal arithmetic for financial calculations
+
+## 💡 Architecture Highlights
+
+-   **Service Layer**: `OrderService` and `MatchingService` handle core logic
+-   **Event System**: `OrderMatched` event for real-time notifications
+-   **Resource Classes**: Consistent API response formatting
+-   **Factory Pattern**: Comprehensive test data generation
+-   **Validation**: Form requests for robust input handling
+
+## 🚦 System Requirements
+
+-   PHP 8.5+
+-   Laravel 12
+-   MySQL/PostgreSQL
+-   bcmath extension (for precise decimal calculations)
+-   Laravel Reverb (for real-time features)
+
+---

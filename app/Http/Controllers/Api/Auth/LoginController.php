@@ -12,9 +12,9 @@ final class LoginController extends Controller
 {
     public function __invoke(LoginRequest $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Invalid login credentials.'
+                'message' => 'Invalid login credentials.',
             ], 401);
         }
 
@@ -22,8 +22,8 @@ final class LoginController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            "message" => "Login successful.",
-            "user" => $user,
+            'message' => 'Login successful.',
+            'user' => $user,
             'access_token' => $token,
         ]);
     }
