@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-final class User extends Authenticatable implements MustVerifyEmail
+final class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens;
+
     use HasFactory;
     use HasUlids;
     use Notifiable;
@@ -28,6 +29,7 @@ final class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'balance',
     ];
 
     /**
@@ -40,6 +42,16 @@ final class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    public function assets(): HasMany
+    {
+        return $this->hasMany(Asset::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -50,6 +62,7 @@ final class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'balance' => 'decimal:8',
         ];
     }
 }

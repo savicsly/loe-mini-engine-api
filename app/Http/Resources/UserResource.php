@@ -16,6 +16,21 @@ final class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'balance' => $this->balance,
+            'assets' => $this->whenLoaded('assets')->map(function ($asset) {
+                return [
+                    'symbol' => $asset->symbol,
+                    'amount' => $asset->amount,
+                    'locked_amount' => $asset->locked_amount,
+                    'available_amount' => $asset->available_amount,
+                ];
+            }),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
     }
 }

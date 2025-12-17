@@ -13,9 +13,7 @@ use Throwable;
 
 final class RegisterController extends Controller
 {
-    public function __construct(protected readonly RegisterUserAction $registerUserAction)
-    {
-    }
+    public function __construct(protected readonly RegisterUserAction $registerUserAction) {}
 
     public function __invoke(RegisterRequest $request)
     {
